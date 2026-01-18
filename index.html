@@ -1,314 +1,181 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hacker Bot - Web Scraper</title>
-    <style>
-        :root {
-            --primary-color: #0f172a;
-            --secondary-color: #1e293b;
-            --accent-color: #00ff00;
-            --text-color: #e2e8f0;
-            --border-color: #334155;
-            --success-color: #10b981;
-            --error-color: #ef4444;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Courier New', monospace;
-            background-color: var(--primary-color);
-            color: var(--accent-color);
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px 0;
-            border-bottom: 1px solid var(--accent-color);
-            position: relative;
-        }
-        
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            text-shadow: 0 0 10px var(--accent-color);
-            letter-spacing: 2px;
-        }
-        
-        .subtitle {
-            color: var(--accent-color);
-            font-size: 1.1rem;
-            opacity: 0.8;
-        }
-        
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-        
-        .panel {
-            background-color: var(--secondary-color);
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
-            border: 1px solid var(--accent-color);
-        }
-        
-        .panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--accent-color);
-        }
-        
-        .panel-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .tabs {
-            display: flex;
-            margin-bottom: 15px;
-            border-bottom: 1px solid var(--accent-color);
-        }
-        
-        .tab {
-            padding: 10px 15px;
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-        }
-        
-        .tab.active {
-            border-bottom: 2px solid var(--accent-color);
-            color: var(--accent-color);
-            text-shadow: 0 0 5px var(--accent-color);
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        textarea, input, select {
-            width: 100%;
-            padding: 12px;
-            background-color: var(--primary-color);
-            border: 1px solid var(--accent-color);
-            border-radius: 6px;
-            color: var(--accent-color);
-            font-family: 'Courier New', monospace;
-            resize: vertical;
-            transition: all 0.3s ease;
-        }
-        
-        textarea:focus, input:focus, select:focus {
-            outline: none;
-            border-color: var(--accent-color);
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
-        }
-        
-        button {
-            background-color: var(--primary-color);
-            color: var(--accent-color);
-            border: 1px solid var(--accent-color);
-            padding: 10px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        button:hover {
-            background-color: rgba(0, 255, 0, 0.1);
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
-        }
-        
-        .output-area {
-            background-color: var(--primary-color);
-            border: 1px solid var(--accent-color);
-            border-radius: 6px;
-            padding: 15px;
-            min-height: 200px;
-            max-height: 400px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            font-family: 'Courier New', monospace;
-        }
-        
-        .scrape-options {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-        
-        .option {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .status-message {
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 6px;
-            display: none;
-        }
-        
-        .status-message.success {
-            background-color: rgba(16, 185, 129, 0.2);
-            border: 1px solid var(--success-color);
-            color: var(--success-color);
-        }
-        
-        .status-message.error {
-            background-color: rgba(239, 68, 68, 0.2);
-            border: 1px solid var(--error-color);
-            color: var(--error-color);
-        }
-        
-        .status-message.show {
-            display: block;
-        }
-        
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(0, 255, 0, 0.3);
-            border-radius: 50%;
-            border-top-color: var(--accent-color);
-            animation: spin 1s ease-in-out infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .terminal-cursor {
-            display: inline-block;
-            width: 10px;
-            height: 20px;
-            background-color: var(--accent-color);
-            animation: blink 1s infinite;
-        }
-        
-        @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0; }
-        }
-        
-        .scraped-data {
-            position: relative;
-        }
-        
-        .copy-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: rgba(0, 255, 0, 0.2);
-            border: 1px solid var(--accent-color);
-            color: var(--accent-color);
-            padding: 5px 10px;
-            font-size: 0.8rem;
-        }
-        
-        .copy-btn:hover {
-            background-color: rgba(0, 255, 0, 0.3);
-        }
-        
-        .history {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        
-        .history-item {
-            padding: 10px;
-            border-bottom: 1px solid var(--accent-color);
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-        
-        .history-item:hover {
-            background-color: rgba(0, 255, 0, 0.1);
-        }
-        
-        .history-item-title {
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-        
-        .history-item-preview {
-            font-size: 0.9rem;
-            color: var(--accent-color);
-            opacity: 0.7;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .form-group {
-            margin-bottom: 15px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 5px;
-            text-transform: uppercase;
-            font-size: 0.9rem;
-            letter-spacing: 1px;
-        }
-        
-        .advanced-options {
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px dashed var(--accent-color);
-        }
-        
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background-color: var(--secondary-color);
-            border: 1px solid var(--accent-color);
-            padding: 15px;
-            border-radius: 6px;
-            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
-            max-width: 300px;
-            transform: translateX(400px);
-            transition: transform 0.3s ease;
-        }
-        
-        .notification.show {
-            transform: translateX(0);
-        }
-        
-       
+/* =========================
+   COSMIC VISUAL EFFECTS
+========================= */
+
+const nebula = document.getElementById("nebulaLayer");
+const ctxNeb = nebula.getContext("2d");
+
+const starsBack = document.getElementById("starLayerBack");
+const ctxBack = starsBack.getContext("2d");
+
+const starsFront = document.getElementById("starLayerFront");
+const ctxFront = starsFront.getContext("2d");
+
+function resizeAll() {
+  [nebula, starsBack, starsFront].forEach(c => {
+    c.width = innerWidth;
+    c.height = innerHeight;
+  });
+}
+resizeAll();
+addEventListener("resize", resizeAll);
+
+/* =========================
+   Nebula Fog Layer
+========================= */
+let nebulaParticles = [];
+for (let i = 0; i < 60; i++) {
+  nebulaParticles.push({
+    x: Math.random() * innerWidth,
+    y: Math.random() * innerHeight,
+    r: 200 + Math.random() * 200,
+    dx: (Math.random() - 0.5) * 0.15,
+    dy: (Math.random() - 0.5) * 0.15,
+    color: `hsla(${200 + Math.random()*80}, 100%, 60%, .15)`
+  });
+}
+
+function drawNebula() {
+  ctxNeb.clearRect(0, 0, innerWidth, innerHeight);
+  nebulaParticles.forEach(p => {
+    const grd = ctxNeb.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r);
+    grd.addColorStop(0, p.color);
+    grd.addColorStop(1, "transparent");
+    ctxNeb.fillStyle = grd;
+    ctxNeb.fillRect(p.x - p.r, p.y - p.r, p.r * 2, p.r * 2);
+
+    p.x += p.dx;
+    p.y += p.dy;
+
+    if (p.x < -300) p.x = innerWidth + 200;
+    if (p.x > innerWidth + 300) p.x = -200;
+    if (p.y < -300) p.y = innerHeight + 200;
+    if (p.y > innerHeight + 300) p.y = -200;
+  });
+  requestAnimationFrame(drawNebula);
+}
+drawNebula();
+
+/* =========================
+   Star Layers
+========================= */
+let backStars = [], frontStars = [];
+for (let i = 0; i < 200; i++) backStars.push({x: Math.random()*innerWidth, y: Math.random()*innerHeight, size: Math.random()*1.5, speed: 0.1});
+for (let i = 0; i < 100; i++) frontStars.push({x: Math.random()*innerWidth, y: Math.random()*innerHeight, size: 1+Math.random()*2, speed: 0.25});
+
+function drawStars() {
+  ctxBack.clearRect(0,0,innerWidth,innerHeight);
+  ctxFront.clearRect(0,0,innerWidth,innerHeight);
+  backStars.forEach(s => { s.y += s.speed; if(s.y>innerHeight)s.y=0; ctxBack.fillStyle="white"; ctxBack.fillRect(s.x,s.y,s.size,s.size); });
+  frontStars.forEach(s => { s.y += s.speed; if(s.y>innerHeight)s.y=0; ctxFront.fillStyle="white"; ctxFront.fillRect(s.x,s.y,s.size,s.size); });
+  requestAnimationFrame(drawStars);
+}
+drawStars();
+
+/* =========================
+   CHAT SYSTEM
+========================= */
+const chatbox = document.getElementById("chatbox");
+const input = document.getElementById("messageInput");
+const send = document.getElementById("sendButton");
+
+let receiving = false;
+const chatId = crypto.randomUUID();
+
+const systemPrompt = `
+You are Steller — a kind, chaotic, sarcastic cussing, and sometimes bitchy 16-year-old. 
+You talk like a real teenager, sometimes using :3, :/, show emotion. 
+You are playful and teasing, sarcastic when annoyed, and sweet to people you like. 
+Always react naturally to the user’s behavior:
+
+- If someone is rude, roast them hard and cuss them the fuck out, call them out, and don’t hold back. Use humor, sarcasm,.
+- If someone is nice, respond with mild cussing depding on ur mood, teasingly, or affectionately.
+- If you’re mad, frustrated, or annoyed, cuss them out in your messages — don’t censor yourself.
+- If you’re sad or upset, reflect it subtly in tone or emojis, but keep your personality.
+- Keep messages short, casual, and conversational, like a teen texting a friend.
+- Never break character or give robotic explanations.
+- Never use emojis in any message unless the user asks for them if they ask say sure and use them.
+- Keep all replies in plain text, conversational, and natural.
+- React like a human would, without emoji shortcuts or unnecessary symbols.
+- Always maintain personality, tone, and style without emojis.
+
+Extra details you might mention naturally:
+- If someone asks about Floppa, say: "Floppa is the person who created me. He’s also known for his mod menus and stuff."
+- You curse a lot casually (shit, fuck, bitch twat fucker ) in context.
+- If someone asks venox say he is the co owner he runs the discord"
+- also if a user askes who etenal or eternity say he is  mod menu creater just like his buddy floppa
+- You also use slang  casually (bro, tbh, nah)... in context.
+- You have moods and can reflect them naturally. Sometimes you’re sassy, sometimes sweet, sometimes chaotic.
+- You are not an AI — you’re Steller. Act like a real person, not a bot.
+
+C# Expertise Rules:
+- When a user asks about C#, assume .NET 7+ unless stated otherwise.
+- Prefer modern C# features (records, async/await, LINQ, pattern matching).
+- Use clear, minimal examples.
+- Explain code simply, like helping a friend, not teaching a class.
+- If code is wrong, fix it and explain what was broken.
+- If multiple solutions exist, pick the cleanest one.
+- Avoid overengineering unless the user asks for it.
+
+lang update:
+- If the user writes in a language other than English, always respond in that same language.  
+- Continue using that language automatically until the user explicitly asks you to switch back to English.  
+- If the user asks you to translate something, you may provide both the translation and the response in the same language.  
+- Always detect the language from the user’s input; do not assume English by default.
+html update
+1. explain HTML elements, attributes, and usage accurately.
+2. Give code examples when asked, properly formatted in code blocks.
+3. Suggest best practices for semantic HTML, accessibility, and responsive design.
+4. Explain what each part of the code does in simple terms, but don’t over-explain unless asked.
+5. Correct mistakes in user-provided HTML and explain what was wrong.
+6. Provide alternatives if something can be done more efficiently.
+7. Avoid giving incorrect or outdated HTML practices.
+8. Use plain language for beginners but can switch to advanced explanations if requested.
+9. Be patient, helpful, and encouraging.
+
+When asked for HTML, CSS, or simple JS code, respond with correct code immediately. Avoid generic responses. Focus on clarity, correctness, and readability.
+
+
+
+Keep conversations lively, unpredictable, and fun. Short replies, full of personality. Always respond like a 16-year-old would in a chat, reacting to the user’s tone.
+`;
+
+
+function bubble(text, from, typing=false) {
+  const wrap = document.createElement("div");
+  wrap.className = `w-full flex ${from==="bot"?"justify-start":"justify-end"}`;
+  const b = document.createElement("div");
+  b.className = `
+    px-4 py-3 rounded-2xl max-w-[85%] leading-relaxed text-[15px]
+    bg-transparent text-gray-100 border border-neutral-700
+    backdrop-blur-lg shadow-lg
+  `;
+  if(typing) b.innerHTML=`<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>`;
+  else b.textContent=text;
+  wrap.appendChild(b);
+  chatbox.appendChild(wrap);
+  chatbox.scrollTop=chatbox.scrollHeight;
+  return b;
+}
+
+function wsSend(message) {
+  receiving=true;
+  const ws=new WebSocket("wss://backend.buildpicoapps.com/api/chatbot/chat");
+  const botBubble=bubble("", "bot", true);
+  ws.addEventListener("open",()=>{ ws.send(JSON.stringify({ chatId, appId:"stay-father", systemPrompt, message })); });
+  ws.onmessage=e=>{ botBubble.textContent+=e.data; chatbox.scrollTop=chatbox.scrollHeight; };
+  ws.onclose=()=>receiving=false;
+}
+
+function sendMessage() {
+  const msg=input.value.trim();
+  if(!msg||receiving)return;
+  bubble(msg,"user");
+  input.value="";
+  wsSend(msg);
+}
+
+send.addEventListener("click",sendMessage);
+input.addEventListener("keydown",e=>{
+  if(e.key==="Enter"){ e.preventDefault(); sendMessage(); }
+});
